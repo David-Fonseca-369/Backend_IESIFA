@@ -15,7 +15,6 @@ namespace Backend_IESIFA.Controllers
             this.context = context;
         }
 
-
         [HttpGet("todos")]
         public async Task<List<NivelEducativo>> Todos()
         {

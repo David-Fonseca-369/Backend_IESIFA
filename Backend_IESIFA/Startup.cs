@@ -17,8 +17,8 @@ namespace Backend_IESIFA
         public void ConfigureServices(IServiceCollection services)
         {
 
-            ////Servicio AutoMapper
-            //services.AddAutoMapper(typeof(Startup));            
+            ////Servicio AutoMapper            
+            services.AddAutoMapper(typeof(Startup));
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -29,8 +29,7 @@ namespace Backend_IESIFA
 
                 options.UseSqlServer(Configuration.GetConnectionString("defaultConnection"));
 
-            });
-            
+            });            
 
             //Agregar cabcera en cors
             services.AddCors(options =>
@@ -38,7 +37,7 @@ namespace Backend_IESIFA
                 options.AddDefaultPolicy(builder =>
                 {
                     builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()
-                    .WithExposedHeaders(new string[] { "totalNumberOfRecords" });
+                    .WithExposedHeaders(new string[] { "cantidadTotalRegistros" });
                 });
             });
 
