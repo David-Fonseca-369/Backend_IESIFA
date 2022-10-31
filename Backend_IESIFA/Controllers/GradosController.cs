@@ -1,4 +1,5 @@
-﻿using Backend_IESIFA.DTOs.Grados;
+﻿using AutoMapper;
+using Backend_IESIFA.DTOs.Grados;
 using Backend_IESIFA.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +11,12 @@ namespace Backend_IESIFA.Controllers
     public class GradosController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
-        public GradosController(ApplicationDbContext context)
+        public GradosController(ApplicationDbContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpGet("todos")]
@@ -31,6 +34,18 @@ namespace Backend_IESIFA.Controllers
                 Nombre = x.Nombre,
                 Estado = x.Estado
             }).ToList();
+        }
+
+
+        [HttpGet("gradosSelector/{idNivelEducativo:int}")]
+        public async Task<ActionResult<List<GradoSelectorDTO>>> GradosSelector(int idNivelEducativo)
+        {
+
+            var grados = await context.Grados
+               .Where(x => x.IdNivelEducativo == idNivelEducativo &&  x.Estado)
+               .ToListAsync();
+
+            return mapper.Map<List<GradoSelectorDTO>>(grados);
         }
 
 

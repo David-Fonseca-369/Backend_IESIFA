@@ -29,6 +29,7 @@ namespace Backend_IESIFA.Controllers
         {
             var grupos = await context.Grupos
                 .Include(x => x.Grado)
+                .Include(x => x.Grado.NivelEducativo)
                 .ToListAsync();
 
             return mapper.Map<List<GrupoDTO>>(grupos);            
@@ -53,7 +54,7 @@ namespace Backend_IESIFA.Controllers
 
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<GrupoDTO>> Get(int id)
+        public async Task<ActionResult<GrupoEditarDTO>> Get(int id)
         {
             var grupo = await context.Grupos
                 .Include(x => x.Grado)
@@ -64,7 +65,13 @@ namespace Backend_IESIFA.Controllers
                 return NotFound($"El grupo {id}, no existe");
             }
 
-            return mapper.Map<GrupoDTO>(grupo);
+            return new GrupoEditarDTO
+            {
+                Id = grupo.Id,
+                IdNivelEducativo = grupo.Grado.IdNivelEducativo,
+                IdGrado = grupo.IdGrado,
+                Nombre = grupo.Nombre
+            };
         }
 
         [HttpPost("crear")]

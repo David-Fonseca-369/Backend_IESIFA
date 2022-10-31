@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Backend_IESIFA.DTOs.Grados;
 using Backend_IESIFA.DTOs.Grupos;
 using Backend_IESIFA.DTOs.Materias;
 using Backend_IESIFA.Entities;
@@ -13,10 +14,16 @@ namespace Backend_IESIFA.Helpers
             //Origen | destino
             CreateMap<Grupo, GrupoDTO>()
                 //Esto mapea la prpiedad que contiene la clave externa
-                .ForMember(x => x.NombreGrado, x => x.MapFrom(g => g.Grado.Nombre));
+                .ForMember(x => x.NombreGrado, x => x.MapFrom(g => g.Grado.Nombre))
+                .ForMember(x => x.NombreNivelEducativo, x => x.MapFrom(n => n.Grado.NivelEducativo.Nombre));
 
 
             CreateMap<GrupoCrearDTO, Grupo>();
+            #endregion
+
+
+            #region Grado
+            CreateMap<Grado, GradoSelectorDTO>();
             #endregion
 
             #region Materia
