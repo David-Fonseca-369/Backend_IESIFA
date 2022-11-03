@@ -30,7 +30,10 @@ namespace Backend_IESIFA.Helpers
             CreateMap<Materia, MateriaDTO>()
             .ForMember(x => x.NombreGrupo, x => x.MapFrom(g => g.Grupo.Nombre));
 
+            CreateMap<Materia, MateriaEditarDTO>();
+
             CreateMap<MateriaCrearDTO, Materia>();
+
             #endregion
         }
     }

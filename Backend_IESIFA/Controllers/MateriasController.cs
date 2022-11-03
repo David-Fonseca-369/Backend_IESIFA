@@ -48,7 +48,7 @@ namespace Backend_IESIFA.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<MateriaDTO>> Get(int id)
+        public async Task<ActionResult<MateriaEditarDTO>> Get(int id)
         {
             var materia = await context.Materias
                 .Include(x => x.Grupo)
@@ -59,7 +59,8 @@ namespace Backend_IESIFA.Controllers
                 return NotFound($"La materia {id}, no existe.");
             }
 
-            return mapper.Map<MateriaDTO>(materia);
+            return mapper.Map<MateriaEditarDTO>(materia);
+           
         }
 
         [HttpPost("crear")]

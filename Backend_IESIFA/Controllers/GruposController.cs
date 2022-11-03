@@ -32,7 +32,7 @@ namespace Backend_IESIFA.Controllers
                 .Include(x => x.Grado.NivelEducativo)
                 .ToListAsync();
 
-            return mapper.Map<List<GrupoDTO>>(grupos);            
+            return mapper.Map<List<GrupoDTO>>(grupos);
         }
 
         [HttpGet("todosPaginacion")]
@@ -40,6 +40,7 @@ namespace Backend_IESIFA.Controllers
         {
             var queryable = context.Grupos
                 .Include(x => x.Grado)
+                .Include(x => x.Grado.NivelEducativo)
                 .AsQueryable();
 
             //Cuenta los registros y los expone en cabecera         
@@ -51,7 +52,18 @@ namespace Backend_IESIFA.Controllers
             return mapper.Map<List<GrupoDTO>>(grupos);
         }
 
+        [HttpGet("gruposSelector")]
+        public async Task<ActionResult<List<GrupoSelectorDTO>>> GruposSelector()
+        {
+            var grupos = await context.Grupos
+                .Include(x => x.Grado.NivelEducativo)
+                .Where(x => x.Estado)
+                .ToListAsync();
 
+            return grupos.Select(x => new GrupoSelectorDTO { Id = x.Id, Nombre = $"{x.Nombre} - {x.Grado.NivelEducativo.Nombre}" }).ToList();
+
+
+        }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<GrupoEditarDTO>> Get(int id)
@@ -91,7 +103,7 @@ namespace Backend_IESIFA.Controllers
         public async Task<ActionResult> Editar(int id, [FromBody] GrupoCrearDTO grupoEditar)
         {
             var grupo = await context.Grupos.FirstOrDefaultAsync(x => x.Id == id);
-            
+
             if (grupo == null)
             {
                 return NotFound($"El grupo {id}, no existe.");
@@ -106,7 +118,7 @@ namespace Backend_IESIFA.Controllers
         }
 
         [HttpPut("activar/{id:int}")]
-        public async Task<ActionResult>Activar(int id)
+        public async Task<ActionResult> Activar(int id)
         {
             var grupo = await context.Grupos.FirstOrDefaultAsync(x => x.Id == id);
 
@@ -123,8 +135,8 @@ namespace Backend_IESIFA.Controllers
         }
 
 
-         [HttpPut("desactivar/{id:int}")]
-        public async Task<ActionResult>Desactivar(int id)
+        [HttpPut("desactivar/{id:int}")]
+        public async Task<ActionResult> Desactivar(int id)
         {
             var grupo = await context.Grupos.FirstOrDefaultAsync(x => x.Id == id);
 
