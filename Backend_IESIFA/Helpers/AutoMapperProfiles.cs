@@ -2,6 +2,7 @@
 using Backend_IESIFA.DTOs.Grados;
 using Backend_IESIFA.DTOs.Grupos;
 using Backend_IESIFA.DTOs.Materias;
+using Backend_IESIFA.DTOs.Usuarios;
 using Backend_IESIFA.Entities;
 
 namespace Backend_IESIFA.Helpers
@@ -34,6 +35,11 @@ namespace Backend_IESIFA.Helpers
 
             CreateMap<MateriaCrearDTO, Materia>();
 
+            #endregion
+
+            #region Usuarios
+            CreateMap<Usuario, UsuarioDTO>()
+                .ForMember(x => x.NombreRol, x => x.MapFrom(r => r.Rol.Nombre));
             #endregion
         }
     }

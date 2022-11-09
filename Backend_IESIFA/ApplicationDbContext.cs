@@ -21,6 +21,8 @@ namespace Backend_IESIFA
             modelBuilder.ApplyConfiguration(new GradoMap());
             modelBuilder.ApplyConfiguration(new GrupoMap());
             modelBuilder.ApplyConfiguration(new MateriaMap());
+            modelBuilder.ApplyConfiguration(new RolMap());
+            modelBuilder.ApplyConfiguration(new UsuarioMap());
         }
 
         public DbSet<Genero> Generos { get; set; }
@@ -28,6 +30,8 @@ namespace Backend_IESIFA
         public DbSet<Grado> Grados { get; set; }
         public DbSet<Grupo> Grupos { get; set; }
         public DbSet<Materia> Materias { get; set; }
+        public DbSet<Rol> Roles { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }      
 
     }
 }
