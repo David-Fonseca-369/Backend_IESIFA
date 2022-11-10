@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using Backend_IESIFA.DTOs.Materias;
+using Backend_IESIFA.DTOs;
 using Backend_IESIFA.DTOs.Usuarios;
 using Backend_IESIFA.Entities;
+using Backend_IESIFA.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace Backend_IESIFA.Controllers
 {
@@ -27,10 +31,37 @@ namespace Backend_IESIFA.Controllers
             return mapper.Map<List<UsuarioDTO>>(usuarios);
         }
 
+
+        [HttpGet("todosPaginacion")]
+        public async Task<ActionResult<List<UsuarioDTO>>> TodosPaginacion([FromQuery] PaginacionDTO paginacionDTO)
+        {
+            var queryable = context.Usuarios
+                .Include(x => x.Rol)
+                .AsQueryable();
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var usuarios = await queryable.Paginar(paginacionDTO).ToListAsync();
+
+            return mapper.Map<List<UsuarioDTO>>(usuarios);
+        }
+
+
+
+        private async Task<bool> ValidarCorreo(string correo)
+        {
+            //Validar el de alumno
+            return await context.Usuarios.AnyAsync(x => x.Correo == correo.ToLower()); /*|| await context.Alumnos.AnyAsync(x => x.Correo == correo))*/
+        }
+
         [HttpPost("crear")]
         public async Task<ActionResult> Crear([FromBody] UsuarioCreacionDTO usuarioCreacionDTO)
         {
-            //validar correo | tanto del usuario como del alumno 
+            bool validarCorreo = await ValidarCorreo(usuarioCreacionDTO.Correo);
+            if (!validarCorreo)
+            {
+                return BadRequest("EL correo ya existe.");
+            }
 
             CrearPasswordHash(usuarioCreacionDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -54,18 +85,102 @@ namespace Backend_IESIFA.Controllers
 
         }
 
-        private static void CrearPasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+
+        [HttpPut("editar/{id:int}")]
+        public async Task<ActionResult> Editar(int id, [FromBody] UsuarioEditarDTO usuarioEditarDTO)
+        {
+            var usuario = await context.Usuarios.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (usuario == null)
+            {
+                return NotFound($"El usuario {id}, no existe.");
+            }
+
+            bool validarCorreo = await ValidarCorreo(usuarioEditarDTO.Correo);
+            if (!validarCorreo)
+            {
+                return BadRequest("EL correo ya existe.");
+            }
+
+            //Validar longitud de contraseña, si se cambia
+            if (!string.IsNullOrEmpty(usuarioEditarDTO.Password))
+            {
+                if (usuarioEditarDTO.Password.Length < 8)
+                {
+                    return BadRequest("La longitud mínima del password debe ser de 8 caracteres.");
+                }
+
+                if (usuarioEditarDTO.Password.Length > 60)
+                {
+                    return BadRequest("La longitud máxima del password debe ser de 60 caracteres.");
+                }
+            }
+            else
+            {
+                //Cambiar contraseña
+                CrearPasswordHash(usuarioEditarDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+                usuario.PasswordHash = passwordHash;
+                usuario.PasswordSalt = passwordSalt;
+            }
+
+            usuario.IdRol = usuarioEditarDTO.IdRol;
+            usuario.Nombre = usuarioEditarDTO.Nombre.Trim();
+            usuario.ApellidoPaterno = usuarioEditarDTO.ApellidoPaterno.Trim();
+            usuario.ApellidoMaterno = usuario.ApellidoMaterno.Trim();
+            usuario.Correo = usuario.Correo.Trim();
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPut("activar/{id:int}")]
+        public async Task<ActionResult> Activar(int id)
+        {
+            var usuario = await context.Usuarios.FirstOrDefaultAsync(x => x.Id == id);
+
+
+            if (usuario == null)
+            {
+                return NotFound($"El usuario {id} no existe.");
+            }
+
+            usuario.Estado = true;
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+
+        [HttpPut("desactivar/{id:int}")]
+        public async Task<ActionResult> Desactivar(int id)
+        {
+            var usuario = await context.Usuarios.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (usuario == null)
+            {
+                return NotFound($"El usuario {id} no existe.");
+            }
+
+            usuario.Estado = false;
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+
+        private void CrearPasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
                 passwordSalt = hmac.Key; //Aquí envía la llave
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)); //Envíar el password encriptado.
             }
-
         }
-
-
-
-
     }
 }
