@@ -58,7 +58,7 @@ namespace Backend_IESIFA.Controllers
         public async Task<ActionResult> Crear([FromBody] UsuarioCreacionDTO usuarioCreacionDTO)
         {
             bool validarCorreo = await ValidarCorreo(usuarioCreacionDTO.Correo);
-            if (!validarCorreo)
+            if (validarCorreo)
             {
                 return BadRequest("EL correo ya existe.");
             }
@@ -97,7 +97,7 @@ namespace Backend_IESIFA.Controllers
             }
 
             bool validarCorreo = await ValidarCorreo(usuarioEditarDTO.Correo);
-            if (!validarCorreo)
+            if (validarCorreo)
             {
                 return BadRequest("EL correo ya existe.");
             }
