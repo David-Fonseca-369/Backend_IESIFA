@@ -47,6 +47,19 @@ namespace Backend_IESIFA.Controllers
         }
 
 
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<UsuarioDTO>> Get(int id)
+        {
+            var usuario = await context.Usuarios.FirstOrDefaultAsync(x => x.Id == id);
+            if (usuario == null)
+            {
+                return NotFound($"El usuario {id}, no existe.");
+            }
+
+            return mapper.Map<UsuarioDTO>(usuario);
+
+        }
+
 
         private async Task<bool> ValidarCorreo(string correo)
         {
@@ -96,11 +109,20 @@ namespace Backend_IESIFA.Controllers
                 return NotFound($"El usuario {id}, no existe.");
             }
 
-            bool validarCorreo = await ValidarCorreo(usuarioEditarDTO.Correo);
-            if (validarCorreo)
+            string correoEntrante = usuarioEditarDTO.Correo.ToLower().Trim();
+
+            //Validar si el correo es distinto al agregado
+            if (usuario.Correo != correoEntrante)
             {
-                return BadRequest("EL correo ya existe.");
+                bool validarCorreo = await ValidarCorreo(usuarioEditarDTO.Correo); 
+                
+                if (validarCorreo)
+                {
+                    return BadRequest("EL correo ya existe.");
+                }
             }
+
+
 
             //Validar longitud de contraseña, si se cambia
             if (!string.IsNullOrEmpty(usuarioEditarDTO.Password))
@@ -114,21 +136,20 @@ namespace Backend_IESIFA.Controllers
                 {
                     return BadRequest("La longitud máxima del password debe ser de 60 caracteres.");
                 }
-            }
-            else
-            {
+                
                 //Cambiar contraseña
                 CrearPasswordHash(usuarioEditarDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
                 usuario.PasswordHash = passwordHash;
                 usuario.PasswordSalt = passwordSalt;
+            
             }
 
             usuario.IdRol = usuarioEditarDTO.IdRol;
             usuario.Nombre = usuarioEditarDTO.Nombre.Trim();
             usuario.ApellidoPaterno = usuarioEditarDTO.ApellidoPaterno.Trim();
-            usuario.ApellidoMaterno = usuario.ApellidoMaterno.Trim();
-            usuario.Correo = usuario.Correo.Trim();
+            usuario.ApellidoMaterno = usuarioEditarDTO.ApellidoMaterno.Trim();
+            usuario.Correo = usuarioEditarDTO.Correo.Trim();
 
             await context.SaveChangesAsync();
 

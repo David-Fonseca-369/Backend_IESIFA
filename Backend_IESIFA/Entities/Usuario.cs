@@ -13,7 +13,7 @@ namespace Backend_IESIFA.Entities
         public string ApellidoPaterno { get; set; }
         [Required, MaxLength (60)]
         public string ApellidoMaterno { get; set; }
-        [Required, MaxLength(60)]
+        [Required, MaxLength(60), EmailAddress]
         public string Correo { get; set; }
         [Required]
         public byte[] PasswordHash { get; set; }
