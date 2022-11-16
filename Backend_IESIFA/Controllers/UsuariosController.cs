@@ -46,6 +46,30 @@ namespace Backend_IESIFA.Controllers
             return mapper.Map<List<UsuarioDTO>>(usuarios);
         }
 
+        [HttpGet("filtrar")]
+        public async Task<ActionResult<List<UsuarioDTO>>> Filtrar([FromQuery] FiltrarDTO filtrarDTO)
+        {
+            var queryable = context.Usuarios
+             .Include(x => x.Rol)
+             .AsQueryable();
+
+
+            if (!string.IsNullOrEmpty(filtrarDTO.Text))
+            {
+                queryable = queryable
+                    .Where(x => x.Nombre.Contains(filtrarDTO.Text)
+                    || x.ApellidoPaterno.Contains(filtrarDTO.Text)
+                    || x.ApellidoMaterno.Contains(filtrarDTO.Text)
+                    || x.Correo.Contains(filtrarDTO.Text));
+            }
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var usuarios = await queryable.Paginar(filtrarDTO.PaginacionDTO).ToListAsync();
+
+            return mapper.Map<List<UsuarioDTO>>(usuarios);
+        }
+
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<UsuarioDTO>> Get(int id)
