@@ -2,6 +2,7 @@
 using AutoMapper;
 using Backend_IESIFA.DTOs;
 using Backend_IESIFA.DTOs.Materias;
+using Backend_IESIFA.DTOs.Usuarios;
 using Backend_IESIFA.Entities;
 using Backend_IESIFA.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,30 @@ namespace Backend_IESIFA.Controllers
             return mapper.Map<List<MateriaDTO>>(materias);
         }
 
+        [HttpGet("filtrar")]
+        public async Task<ActionResult<List<MateriaDTO>>> Filtrar([FromQuery] FiltrarDTO filtrarDTO)
+        {
+
+            var queryable = context.Materias
+                .Include(x => x.Grupo)
+                .AsQueryable();
+
+
+            if (!string.IsNullOrEmpty(filtrarDTO.Text))
+            {
+
+                queryable = queryable
+                    .Where(x => x.Nombre.Contains(filtrarDTO.Text)
+                    || x.Grupo.Nombre.Contains(filtrarDTO.Text));
+            }
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var materias = await queryable.Paginar(filtrarDTO.PaginacionDTO).ToListAsync();
+
+            return mapper.Map<List<MateriaDTO>>(materias);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<ActionResult<MateriaEditarDTO>> Get(int id)
         {
@@ -60,7 +85,7 @@ namespace Backend_IESIFA.Controllers
             }
 
             return mapper.Map<MateriaEditarDTO>(materia);
-           
+
         }
 
         [HttpPost("crear")]
