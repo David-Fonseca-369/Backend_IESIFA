@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Backend_IESIFA.DTOs.Alumnos;
 using Backend_IESIFA.DTOs.Grados;
 using Backend_IESIFA.DTOs.Grupos;
 using Backend_IESIFA.DTOs.Materias;
@@ -40,6 +41,17 @@ namespace Backend_IESIFA.Helpers
             #region Usuarios
             CreateMap<Usuario, UsuarioDTO>()
                 .ForMember(x => x.NombreRol, x => x.MapFrom(r => r.Rol.Nombre));
+            #endregion
+
+
+            #region Alumnos
+            CreateMap<AlumnoCrearDTO, Alumno>();
+
+            CreateMap<AlumnoEditarDTO, Alumno>();
+               
+            CreateMap<Alumno, AlumnoDTO>()
+                .ForMember(x => x.NombreGrupo, x => x.MapFrom(g => g.Grupo.Nombre))
+                .ForMember(x => x.NombreGenero, x => x.MapFrom(g => g.Genero.Nombre));
             #endregion
         }
     }

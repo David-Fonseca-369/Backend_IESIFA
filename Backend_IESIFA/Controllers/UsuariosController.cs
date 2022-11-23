@@ -88,7 +88,15 @@ namespace Backend_IESIFA.Controllers
         private async Task<bool> ValidarCorreo(string correo)
         {
             //Validar el de alumno
-            return await context.Usuarios.AnyAsync(x => x.Correo == correo.ToLower()); /*|| await context.Alumnos.AnyAsync(x => x.Correo == correo))*/
+            var correoAlumno = await context.Alumnos.AnyAsync(x => x.Correo == correo.ToLower());
+
+            if (correoAlumno)//si existe ya retorno que hay uno existente.
+            {
+                return correoAlumno;
+            }
+
+            //Paso a verificar el de usuario en caso de que no exista en el de alumno
+            return await context.Usuarios.AnyAsync(x => x.Correo == correo.ToLower());
         }
 
         [HttpPost("crear")]
@@ -142,7 +150,7 @@ namespace Backend_IESIFA.Controllers
                 
                 if (validarCorreo)
                 {
-                    return BadRequest("EL correo ya existe.");
+                    return BadRequest("El correo ya existe.");
                 }
             }
 
