@@ -1,5 +1,8 @@
 ﻿using Backend_IESIFA.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Backend_IESIFA
 {
@@ -29,7 +32,7 @@ namespace Backend_IESIFA
 
                 options.UseSqlServer(Configuration.GetConnectionString("defaultConnection"));
 
-            });            
+            });
 
             //Agregar cabcera en cors
             services.AddCors(options =>
@@ -51,12 +54,26 @@ namespace Backend_IESIFA
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opciones =>
+              opciones.TokenValidationParameters = new TokenValidationParameters
+              {
+                  ValidateIssuer = false,
+                  ValidateAudience = false,
+                  ValidateLifetime = true, //valida el tiempo de vida
+                  ValidateIssuerSigningKey = true, //valida la firma con la llave privada
+                  IssuerSigningKey = new SymmetricSecurityKey( //configuramos la llave
+                  Encoding.UTF8.GetBytes(Configuration["keyjwt"])),
+                  ClockSkew = TimeSpan.Zero //para no tener problemas con diferencias de tiempo al calcular que el token ha vencido.
+
+              });
+
             services.AddSwaggerGen();
 
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {           
+        {
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
@@ -69,7 +86,7 @@ namespace Backend_IESIFA
             //app.UseStaticFiles();
 
             app.UseRouting();
-            
+
             app.UseCors();
 
 
