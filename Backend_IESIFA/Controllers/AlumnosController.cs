@@ -102,6 +102,7 @@ namespace Backend_IESIFA.Controllers
             CrearPasswordHash(alumnoCrear.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             var alumno = mapper.Map<Alumno>(alumnoCrear);
+            alumno.Curp.ToUpper();
             alumno.PasswordHash = passwordHash;
             alumno.PasswordSalt = passwordSalt;
             alumno.Estado = true;
@@ -139,6 +140,8 @@ namespace Backend_IESIFA.Controllers
             }
 
             alumno = mapper.Map(alumnoEditar, alumno);
+            alumno.Curp.ToUpper();
+            alumno.Correo.ToLower();
 
             //Validar longitud de contraseña, si se cambia
             if (!string.IsNullOrEmpty(alumnoEditar.Password))
