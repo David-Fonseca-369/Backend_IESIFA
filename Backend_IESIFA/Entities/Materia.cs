@@ -7,6 +7,7 @@ namespace Backend_IESIFA.Entities
         public int Id { get; set; }
         [Required]
         public int IdGrupo { get; set; }
+        public int? IdDocente { get; set; }
         [Required, MaxLength(60)]
         public string Nombre { get; set; }
         [MaxLength(255)]
@@ -16,5 +17,7 @@ namespace Backend_IESIFA.Entities
 
         //referencia
         public Grupo Grupo { get; set; }
+        public Usuario Docente { get; set; }
+
     }
 }

@@ -30,7 +30,8 @@ namespace Backend_IESIFA.Helpers
 
             #region Materia
             CreateMap<Materia, MateriaDTO>()
-            .ForMember(x => x.NombreGrupo, x => x.MapFrom(g => g.Grupo.Nombre));
+            .ForMember(x => x.NombreGrupo, x => x.MapFrom(g => g.Grupo.Nombre))
+            .ForMember(x => x.NombreDocente, x => x.MapFrom(d => d.Docente.Nombre));
 
             CreateMap<Materia, MateriaEditarDTO>();
 

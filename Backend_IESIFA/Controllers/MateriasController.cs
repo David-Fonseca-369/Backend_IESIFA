@@ -7,6 +7,7 @@ using Backend_IESIFA.Entities;
 using Backend_IESIFA.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 
 namespace Backend_IESIFA.Controllers
@@ -29,16 +30,21 @@ namespace Backend_IESIFA.Controllers
         {
             var materias = await context.Materias
                 .Include(x => x.Grupo)
+                .Include(x => x.Docente)
                 .ToListAsync();
 
             return mapper.Map<List<MateriaDTO>>(materias);
         }
 
-        [HttpGet("todosPaginacion")]
-        public async Task<ActionResult<List<MateriaDTO>>> TodosPaginacion([FromQuery] PaginacionDTO paginacionDTO)
+
+        //GET: api/materias/asignadas/{idDocente}
+        [HttpGet("asignadasPaginacion/{idDocente:int}")]
+        public async Task<ActionResult<List<MateriaDTO>>> AsignadasPaginacion(int idDocente, [FromQuery] PaginacionDTO paginacionDTO)
         {
             var queryable = context.Materias
                 .Include(x => x.Grupo)
+                .Include(x => x.Docente)
+                .Where(x => x.IdDocente == idDocente)
                 .AsQueryable();
 
             await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
@@ -48,12 +54,104 @@ namespace Backend_IESIFA.Controllers
             return mapper.Map<List<MateriaDTO>>(materias);
         }
 
+
+        //GET: api/materias/disponiblesPaginacion
+        [HttpGet("disponiblesPaginacion")]
+        public async Task<ActionResult<List<MateriaDTO>>> DisponiblesPaginacion([FromQuery] PaginacionDTO paginacionDTO)
+        {
+
+            var queryable = context.Materias
+                .Include(x => x.Grupo)
+                .Include(x => x.Docente)
+                .Where(x => x.IdDocente == null && x.Estado)
+                .AsQueryable();
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var materias = await queryable.Paginar(paginacionDTO).ToListAsync();
+
+            return mapper.Map<List<MateriaDTO>>(materias);
+
+        }
+
+        //PUT: api/asignar/{idMateria}/{idDocente}
+        [HttpPut("asignar/{idMateria:int}/{idDocente:int}")]
+        public async Task<ActionResult> Asignar(int idMateria, int idDocente)
+        {
+            
+            //Si existe materia
+            var materia = await context.Materias
+                .FirstOrDefaultAsync(x => x.Id == idMateria);
+            
+            if (materia == null)
+            {
+                return NotFound($"La materia {idMateria} no existe.");
+            }
+
+            //Si existe docente
+            bool docenteExiste = await context.Usuarios.AnyAsync(x => x.Id == idDocente);
+
+            if (!docenteExiste)
+            {
+                return NotFound($"El docente {idDocente} no existe.");
+            }
+
+            //asignamos
+
+            materia.IdDocente = idDocente;
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+
+        }
+
+        //PUT: api/quitar/{idMateria}
+        [HttpPut("quitar/{idMateria:int}")]
+        public async Task<ActionResult> Quitar(int idMateria)
+        {
+
+            //Si existe materia
+            var materia = await context.Materias
+                .FirstOrDefaultAsync(x => x.Id == idMateria);
+
+            if (materia == null)
+            {
+                return NotFound($"La materia {idMateria} no existe.");
+            }
+
+            materia.IdDocente = null;
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+
+        }
+
+        [HttpGet("todosPaginacion")]
+        public async Task<ActionResult<List<MateriaDTO>>> TodosPaginacion([FromQuery] PaginacionDTO paginacionDTO)
+        {
+            var queryable = context.Materias
+                .Include(x => x.Grupo)
+                .Include(x => x.Docente)
+                .AsQueryable();
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var materias = await queryable.Paginar(paginacionDTO).ToListAsync();
+
+            return mapper.Map<List<MateriaDTO>>(materias);
+        }
+
+
+
         [HttpGet("filtrar")]
         public async Task<ActionResult<List<MateriaDTO>>> Filtrar([FromQuery] FiltrarDTO filtrarDTO)
         {
 
             var queryable = context.Materias
                 .Include(x => x.Grupo)
+                .Include(x => x.Docente)
                 .AsQueryable();
 
 
@@ -77,6 +175,7 @@ namespace Backend_IESIFA.Controllers
         {
             var materia = await context.Materias
                 .Include(x => x.Grupo)
+                .Include(x => x.Docente)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             if (materia == null)

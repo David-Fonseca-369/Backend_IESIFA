@@ -13,7 +13,7 @@ namespace Backend_IESIFA.Mapping
 
             //reference            
             builder.HasOne(x => x.Grupo).WithMany().HasForeignKey(x => x.IdGrupo);
-
+            builder.HasOne(x => x.Docente).WithMany().HasForeignKey(x => x.IdDocente);
         }
     }
 }

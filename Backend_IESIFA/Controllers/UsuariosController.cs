@@ -26,10 +26,26 @@ namespace Backend_IESIFA.Controllers
         [HttpGet("Todos")]
         public async Task<ActionResult<List<UsuarioDTO>>> Todos()
         {
-            var usuarios = await context.Usuarios.ToListAsync();
+            var usuarios = await context.Usuarios
+                .Include(x => x.Rol)
+                .ToListAsync();
 
             return mapper.Map<List<UsuarioDTO>>(usuarios);
         }
+
+        [HttpGet("Docentes")]
+        public async Task<ActionResult<List<UsuarioDTO>>> Docentes()
+        {
+            var docentes = await context.Usuarios
+                .Include(x => x.Rol)
+                .Where(x => x.IdRol == 2)
+                .ToListAsync();
+
+            return mapper.Map<List<UsuarioDTO>>(docentes);
+
+        }
+
+
 
 
         [HttpGet("todosPaginacion")]
