@@ -6,6 +6,8 @@ using Backend_IESIFA.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Backend_IESIFA.Controllers
 {
@@ -23,7 +25,7 @@ namespace Backend_IESIFA.Controllers
         }
 
 
-        [HttpGet("Todos")]
+        [HttpGet("todos")]
         public async Task<ActionResult<List<AlumnoDTO>>> Todos()
         {
             var alumnos = await context.Alumnos
@@ -64,6 +66,55 @@ namespace Backend_IESIFA.Controllers
 
         }
 
+        [HttpGet("alumnosGrupo/{idGrupo:int}")]
+        public async Task<ActionResult<List<AlumnoDTO>>> AlumnosGrupo(int idGrupo, [FromQuery] PaginacionDTO paginacionDTO)
+        {      
+            var queryable = context.Alumnos
+               .Include(x => x.Grupo)
+               .Where(x => x.IdGrupo == idGrupo)
+               .OrderBy(x => x.ApellidoPaterno)
+               .ThenBy(x => x.ApellidoMaterno)
+               .ThenBy(x => x.Nombre)
+               .AsQueryable();
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var alumnos = await queryable.Paginar(paginacionDTO).ToListAsync();
+
+            return mapper.Map<List<AlumnoDTO>>(alumnos);
+        }
+
+        [HttpGet("alumnosGrupoFiltrar/{idGrupo:int}")]
+        public async Task<ActionResult<List<AlumnoDTO>>> AlumnosGrupoFiltrar(int idGrupo, [FromQuery] FiltrarDTO filtrarDTO)
+        {
+            var queryable = context.Alumnos
+              .Include(x => x.Grupo)
+              .Where(x => x.IdGrupo == idGrupo)
+              .OrderBy(x => x.ApellidoPaterno)
+              .ThenBy(x => x.ApellidoMaterno)
+              .ThenBy(x => x.Nombre)
+              .AsQueryable();
+
+
+            if (!string.IsNullOrEmpty(filtrarDTO.Text))
+            {
+                queryable = queryable
+                    .Where(x => x.Nombre.Contains(filtrarDTO.Text)
+                    || x.ApellidoPaterno.Contains(filtrarDTO.Text)
+                    || x.ApellidoMaterno.Contains(filtrarDTO.Text)
+                    || x.Correo.Contains(filtrarDTO.Text)
+                    || x.NoCuenta.Contains(filtrarDTO.Text));
+                    
+            }
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var alumnos = await queryable.Paginar(filtrarDTO.PaginacionDTO).ToListAsync();
+
+            return mapper.Map<List<AlumnoDTO>>(alumnos);
+
+        }
+
         [HttpGet("filtrar")]
         public async Task<ActionResult<List<AlumnoDTO>>> Filtrar([FromQuery] FiltrarDTO filtrarDTO)
         {
@@ -79,7 +130,8 @@ namespace Backend_IESIFA.Controllers
                     .Where(x => x.Nombre.Contains(filtrarDTO.Text)
                     || x.ApellidoPaterno.Contains(filtrarDTO.Text)
                     || x.ApellidoMaterno.Contains(filtrarDTO.Text)
-                    || x.Correo.Contains(filtrarDTO.Text));
+                    || x.Correo.Contains(filtrarDTO.Text)
+                    || x.NoCuenta.Contains(filtrarDTO.Text));
             }
 
             await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
@@ -99,10 +151,18 @@ namespace Backend_IESIFA.Controllers
                 return BadRequest("El correo ya existe.");
             }
 
+            bool validarNoCuenta  = await ValidarNoCuenta(alumnoCrear.NoCuenta);
+            
+            if (validarNoCuenta)
+            {
+                return BadRequest("El No. de Cuenta ya existe.");
+            }
+
             CrearPasswordHash(alumnoCrear.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             var alumno = mapper.Map<Alumno>(alumnoCrear);
-            alumno.Curp.ToUpper();
+            _ = alumno.NoCuenta.ToUpper();
+            _ = alumno.Curp.ToUpper();
             alumno.PasswordHash = passwordHash;
             alumno.PasswordSalt = passwordSalt;
             alumno.Estado = true;
@@ -137,11 +197,24 @@ namespace Backend_IESIFA.Controllers
                     return BadRequest("El correo ya existe.");
                 }
 
+            }            
+
+            string noCuentaEntrante = alumnoEditar.NoCuenta.ToUpper();
+
+            if (alumno.NoCuenta != noCuentaEntrante)
+            {
+                bool validarNoCuenta = await ValidarNoCuenta(noCuentaEntrante);
+
+                if (validarNoCuenta)
+                {
+                    return BadRequest("El No. de Cuenta ya existe.");
+                }
             }
 
             alumno = mapper.Map(alumnoEditar, alumno);
-            alumno.Curp.ToUpper();
-            alumno.Correo.ToLower();
+            _ = alumno.NoCuenta.ToUpper();
+            _ = alumno.Curp.ToUpper();
+            _ = alumno.Correo.ToLower();
 
             //Validar longitud de contraseña, si se cambia
             if (!string.IsNullOrEmpty(alumnoEditar.Password))
@@ -223,6 +296,11 @@ namespace Backend_IESIFA.Controllers
 
             //Paso a verificar el de usuario en caso de que no exista en el de alumno
             return await context.Usuarios.AnyAsync(x => x.Correo == correo.ToLower());
+        }
+
+        private async Task<bool> ValidarNoCuenta(string noCuenta)
+        {
+            return await context.Alumnos.AnyAsync(x => x.NoCuenta == noCuenta.ToUpper());
         }
 
 

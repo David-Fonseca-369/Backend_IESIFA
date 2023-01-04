@@ -14,6 +14,8 @@ namespace Backend_IESIFA.DTOs.Alumnos
         public string ApellidoPaterno { get; set; }
         [Required, MaxLength(60)]
         public string ApellidoMaterno { get; set; }
+        [Required, MaxLength(60)]
+        public string NoCuenta { get; set; }
         [Required, MinLength(18), MaxLength(18)]
         public string Curp { get; set; }
         [MaxLength(10)]

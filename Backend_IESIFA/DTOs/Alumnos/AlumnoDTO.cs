@@ -13,6 +13,7 @@ namespace Backend_IESIFA.DTOs.Alumnos
         public string Nombre { get; set; }
         public string ApellidoPaterno { get; set; }
         public string ApellidoMaterno { get; set; }
+        public string NoCuenta { get; set; }
         public string Curp { get; set; }
         public string Telefono { get; set; }
         public string Direccion { get; set; }

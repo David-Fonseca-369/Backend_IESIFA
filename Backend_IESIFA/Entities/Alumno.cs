@@ -15,6 +15,8 @@ namespace Backend_IESIFA.Entities
         public string ApellidoPaterno { get; set; }
         [Required, MaxLength(60)]
         public string ApellidoMaterno { get; set; }
+        [Required, MaxLength(60)]
+        public string NoCuenta { get; set; }       
         [Required,MinLength(18), MaxLength(18)]
         public string Curp { get; set; }
         [MinLength(10), MaxLength(10)]

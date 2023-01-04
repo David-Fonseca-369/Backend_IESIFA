@@ -43,13 +43,41 @@ namespace Backend_IESIFA.Controllers
         {
             var queryable = context.Materias
                 .Include(x => x.Grupo)
+                .Include(x => x.Grupo.Grado)
                 .Include(x => x.Docente)
                 .Where(x => x.IdDocente == idDocente)
+                .OrderBy(x => x.Nombre)
                 .AsQueryable();
 
             await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
 
             var materias = await queryable.Paginar(paginacionDTO).ToListAsync();
+
+            return mapper.Map<List<MateriaDTO>>(materias);
+        }
+
+
+        //GET: api/materias/asignadasFiltrar/{idDocente}
+        [HttpGet("asignadasFiltrar/{idDocente:int}")]
+        public async Task<ActionResult<List<MateriaDTO>>> AsignadasFiltrar(int idDocente, [FromQuery] FiltrarDTO filtrarDTO)
+        {
+            var queryable = context.Materias
+             .Include(x => x.Grupo)
+             .Include(x => x.Grupo.Grado)
+             .Include(x => x.Docente)
+             .Where(x => x.IdDocente == idDocente)
+             .OrderBy(x => x.Nombre)
+             .AsQueryable();
+
+            if (!string.IsNullOrEmpty(filtrarDTO.Text))
+            {
+                queryable = queryable.Where(x => x.Nombre.Contains(filtrarDTO.Text)
+                || x.Grupo.Nombre.Contains(filtrarDTO.Text));
+            }
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            var materias = await queryable.Paginar(filtrarDTO.PaginacionDTO).ToListAsync();
 
             return mapper.Map<List<MateriaDTO>>(materias);
         }
@@ -78,11 +106,11 @@ namespace Backend_IESIFA.Controllers
         [HttpPut("asignar/{idMateria:int}/{idDocente:int}")]
         public async Task<ActionResult> Asignar(int idMateria, int idDocente)
         {
-            
+
             //Si existe materia
             var materia = await context.Materias
                 .FirstOrDefaultAsync(x => x.Id == idMateria);
-            
+
             if (materia == null)
             {
                 return NotFound($"La materia {idMateria} no existe.");

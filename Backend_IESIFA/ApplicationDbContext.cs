@@ -24,6 +24,10 @@ namespace Backend_IESIFA
             modelBuilder.ApplyConfiguration(new RolMap());
             modelBuilder.ApplyConfiguration(new UsuarioMap());
             modelBuilder.ApplyConfiguration(new AlumnoMap());
+            modelBuilder.ApplyConfiguration(new PeriodoMap());
+            modelBuilder.ApplyConfiguration(new CalificacionCabeceraMap());
+            modelBuilder.ApplyConfiguration(new CalificacionDetallePreparatoriaMap());
+            modelBuilder.ApplyConfiguration(new CalificacionDetalleSecundariaMap());
         }
 
         public DbSet<Genero> Generos { get; set; }
@@ -34,5 +38,9 @@ namespace Backend_IESIFA
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Alumno> Alumnos { get; set; }
+        public DbSet<Periodo> Periodos { get; set; }
+        public DbSet<CalificacionCabecera> CalificacionCabeceras { get; set; }
+        public DbSet<CalificacionDetallePreparatoria> CalificacionesDetallePreparatoria { get; set; }
+        public DbSet<CalificacionDetalleSecundaria> CalificacionesDetalleSecundaria { get; set; }
     }
 }

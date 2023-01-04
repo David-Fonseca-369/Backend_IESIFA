@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Backend_IESIFA.DTOs.Alumnos;
+using Backend_IESIFA.DTOs.Calificaciones;
 using Backend_IESIFA.DTOs.Grados;
 using Backend_IESIFA.DTOs.Grupos;
 using Backend_IESIFA.DTOs.Materias;
+using Backend_IESIFA.DTOs.Periodos;
 using Backend_IESIFA.DTOs.Usuarios;
 using Backend_IESIFA.Entities;
 
@@ -31,7 +33,8 @@ namespace Backend_IESIFA.Helpers
             #region Materia
             CreateMap<Materia, MateriaDTO>()
             .ForMember(x => x.NombreGrupo, x => x.MapFrom(g => g.Grupo.Nombre))
-            .ForMember(x => x.NombreDocente, x => x.MapFrom(d => d.Docente.Nombre));
+            .ForMember(x => x.NombreDocente, x => x.MapFrom(d => d.Docente.Nombre))
+            .ForMember(x => x.IdNivelEducativo, x => x.MapFrom(n => n.Grupo.Grado.IdNivelEducativo));
 
             CreateMap<Materia, MateriaEditarDTO>();
 
@@ -53,6 +56,15 @@ namespace Backend_IESIFA.Helpers
             CreateMap<Alumno, AlumnoDTO>()
                 .ForMember(x => x.NombreGrupo, x => x.MapFrom(g => g.Grupo.Nombre))
                 .ForMember(x => x.NombreGenero, x => x.MapFrom(g => g.Genero.Nombre));
+            #endregion
+
+            #region Periodos
+            CreateMap<Periodo, PeriodoDTO>();
+            CreateMap<PeriodoCreacionDTO, Periodo>();
+            #endregion
+
+            #region Calificaciones
+            CreateMap<CalificacionesCreacionDTO, CalificacionCabecera>();
             #endregion
         }
     }
